@@ -20,30 +20,24 @@ const cookieOptions = {
     httpOnly: true,
     sameSite: true,
     signed: true,
-    secure: process.env.NODE_ENV === "development" ? false : true,
+    secure: process.env.NODE_ENV === 'development' ? false : true
 };
-const logInViaGoogle = (code, token, db, res) => __awaiter(void 0, void 0, void 0, function* () {
+const LogInViaGoogle = (code, token, db, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { user } = yield api_1.Google.logIn(code);
     if (!user) {
         throw new Error("Google login error");
     }
-    // Name/Photo/Email Lists
-    const userNamesList = user.names && user.names.length ? user.names : null;
+    //Name/Photo/Email Lists
+    const UserNamesList = user.names && user.names.length ? user.names : null;
     const userPhotosList = user.photos && user.photos.length ? user.photos : null;
-    const userEmailsList = user.emailAddresses && user.emailAddresses.length
-        ? user.emailAddresses
-        : null;
-    // User Display Name
-    const userName = userNamesList ? userNamesList[0].displayName : null;
-    // User Id
-    const userId = userNamesList &&
-        userNamesList[0].metadata &&
-        userNamesList[0].metadata.source
-        ? userNamesList[0].metadata.source.id
-        : null;
-    // User Avatar
+    const userEmailsList = user.emailAddresses && user.emailAddresses.length ? user.emailAddresses : null;
+    //User Display Name
+    const userName = UserNamesList ? UserNamesList[0].displayName : null;
+    //User Id
+    const userId = UserNamesList && UserNamesList[0].metadata && UserNamesList[0].metadata.source ? UserNamesList[0].metadata.source.id : null;
+    //User Avatar
     const userAvatar = userPhotosList && userPhotosList[0].url ? userPhotosList[0].url : null;
-    // User Email
+    //User Email
     const userEmail = userEmailsList && userEmailsList[0].value ? userEmailsList[0].value : null;
     if (!userId || !userName || !userAvatar || !userEmail) {
         throw new Error("Google login error");
@@ -53,8 +47,8 @@ const logInViaGoogle = (code, token, db, res) => __awaiter(void 0, void 0, void 
             name: userName,
             avatar: userAvatar,
             contact: userEmail,
-            token,
-        },
+            token
+        }
     }, { returnOriginal: false });
     let viewer = updateRes.value;
     if (!viewer) {
@@ -66,18 +60,18 @@ const logInViaGoogle = (code, token, db, res) => __awaiter(void 0, void 0, void 
             contact: userEmail,
             income: 0,
             bookings: [],
-            listings: [],
+            listings: []
         });
         viewer = insertResult.ops[0];
     }
-    res.cookie("viewer", userId, Object.assign(Object.assign({}, cookieOptions), { maxAge: 365 * 24 * 60 * 60 * 1000 }));
+    res.cookie('viewer', userId, Object.assign(Object.assign({}, cookieOptions), { maxAge: 365 * 24 * 60 * 60 * 1000 }));
     return viewer;
 });
 const logInViaCookie = (token, db, req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const updateRes = yield db.users.findOneAndUpdate({ _id: req.signedCookies.viewer }, { $set: { token } }, { returnOriginal: false });
-    let viewer = updateRes.value;
+    const viewer = updateRes.value;
     if (!viewer) {
-        res.clearCookie("viewer", cookieOptions);
+        res.clearCookie('viewer', cookieOptions);
     }
     return viewer;
 });
@@ -90,15 +84,15 @@ exports.viewerResolvers = {
             catch (error) {
                 throw new Error(`Failed to query Google Auth Url: ${error}`);
             }
-        },
+        }
     },
     Mutation: {
         logIn: (_root, { input }, { db, req, res }) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 const code = input ? input.code : null;
-                const token = crypto_1.default.randomBytes(16).toString("hex");
+                const token = crypto_1.default.randomBytes(16).toString('hex');
                 const viewer = code
-                    ? yield logInViaGoogle(code, token, db, res)
+                    ? yield LogInViaGoogle(code, token, db, res)
                     : yield logInViaCookie(token, db, req, res);
                 if (!viewer) {
                     return { didRequest: true };
@@ -108,16 +102,16 @@ exports.viewerResolvers = {
                     token: viewer.token,
                     avatar: viewer.avatar,
                     walletId: viewer.walletId,
-                    didRequest: true,
+                    didRequest: true
                 };
             }
             catch (error) {
-                throw new Error(`Failed to log in: ${error}`);
+                throw new Error(`Failed to login: ${error}`);
             }
         }),
         logOut: (_root, _args, { res }) => {
             try {
-                res.clearCookie("viewer", cookieOptions);
+                res.clearCookie('viewer', cookieOptions);
                 return { didRequest: true };
             }
             catch (error) {
@@ -132,7 +126,7 @@ exports.viewerResolvers = {
                     throw new Error("viewer cannot be found");
                 }
                 const wallet = yield api_1.Stripe.connect(code);
-                if (!wallet || !wallet.stripe_user_id) {
+                if (!wallet) {
                     throw new Error("stripe grant error");
                 }
                 const updateRes = yield db.users.findOneAndUpdate({ _id: viewer._id }, { $set: { walletId: wallet.stripe_user_id } }, { returnOriginal: false });
@@ -145,38 +139,36 @@ exports.viewerResolvers = {
                     token: viewer.token,
                     avatar: viewer.avatar,
                     walletId: viewer.walletId,
-                    didRequest: true,
+                    didRequest: true
                 };
             }
             catch (error) {
                 throw new Error(`Failed to connect with Stripe: ${error}`);
             }
         }),
-        disconnectStripe: (_root, 
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        args, { db, req }) => __awaiter(void 0, void 0, void 0, function* () {
+        disconnectStripe: (_root, _args, { db, req }) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 let viewer = yield utils_1.authorize(db, req);
                 if (!viewer) {
-                    throw new Error("viewer could not be found");
+                    throw new Error("viewer cannot be found");
                 }
-                const updateRes = yield db.users.findOneAndUpdate({ _id: viewer._id }, { $set: { walletId: null } });
+                const updateRes = yield db.users.findOneAndUpdate({ _id: viewer._id }, { $set: { walletId: undefined } }, { returnOriginal: false });
                 if (!updateRes.value) {
                     throw new Error("viewer could not be updated");
                 }
                 viewer = updateRes.value;
                 return {
                     _id: viewer._id,
-                    token: viewer.avatar,
+                    token: viewer.token,
                     avatar: viewer.avatar,
                     walletId: viewer.walletId,
-                    didRequest: true,
+                    didRequest: true
                 };
             }
             catch (error) {
-                throw new Error(`Filed to disconnect with Stripe: ${error}`);
+                throw new Error(`Failed to disconnect with Stripe: ${error}`);
             }
-        }),
+        })
     },
     Viewer: {
         id: (viewer) => {
@@ -184,6 +176,6 @@ exports.viewerResolvers = {
         },
         hasWallet: (viewer) => {
             return viewer.walletId ? true : undefined;
-        },
-    },
+        }
+    }
 };
