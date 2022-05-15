@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Stripe = void 0;
 const stripe_1 = __importDefault(require("stripe"));
-require("dotenv").config();
 const client = new stripe_1.default(`${process.env.S_SECRET_KEY}`, {
     apiVersion: "2020-08-27",
 });

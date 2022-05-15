@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.viewerResolvers = void 0;
-require("dotenv").config();
 const crypto_1 = __importDefault(require("crypto"));
 const api_1 = require("../../../lib/api");
 const utils_1 = require("../../../lib/utils");

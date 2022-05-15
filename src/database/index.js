@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectDatabase = void 0;
-require("dotenv").config();
 const mongodb_1 = require("mongodb");
 const user = process.env.DB_USER;
 const userPassword = process.env.DB_USER_PASSWORD;

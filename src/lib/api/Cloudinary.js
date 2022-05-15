@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Cloudinary = void 0;
-require("dotenv").config();
 const cloudinary_1 = __importDefault(require("cloudinary"));
 exports.Cloudinary = {
     upload: (image) => __awaiter(void 0, void 0, void 0, function* () {
