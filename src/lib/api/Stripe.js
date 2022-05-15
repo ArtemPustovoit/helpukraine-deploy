@@ -15,28 +15,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Stripe = void 0;
 const stripe_1 = __importDefault(require("stripe"));
 const client = new stripe_1.default(`${process.env.S_SECRET_KEY}`, {
-    apiVersion: '2020-08-27'
+    apiVersion: "2020-08-27",
 });
 exports.Stripe = {
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     connect: (code) => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield client.oauth.token({
-            grant_type: 'authorization_code',
-            code
+            /* eslint-disable @typescript-eslint/camelcase */
+            grant_type: "authorization_code",
+            code,
         });
         return response;
     }),
+    disconnect: (stripeUserId) => __awaiter(void 0, void 0, void 0, function* () {
+        // @ts-ignore
+        const response = yield client.oauth.deauthorize({
+            /* eslint-disable @typescript-eslint/camelcase */
+            client_id: `${process.env.S_CLIENT_ID}`,
+            stripe_user_id: stripeUserId,
+        });
+        console.log(`${process.env.S_CLIENT_ID}`);
+        return response;
+    }),
     charge: (amount, source, stripeAccount) => __awaiter(void 0, void 0, void 0, function* () {
+        /* eslint-disable @typescript-eslint/camelcase */
         const res = yield client.charges.create({
             amount,
-            currency: 'usd',
+            currency: "usd",
             source,
-            application_fee_amount: Math.round(amount * 0.05)
+            application_fee_amount: Math.round(amount * 0.05),
         }, {
-            stripeAccount
+            stripeAccount,
         });
-        if (res.status !== 'succeeded') {
+        /* eslint-enable @typescript-eslint/camelcase */
+        if (res.status !== "succeeded") {
             throw new Error("failed to create charge with Stripe");
         }
-    })
+    }),
 };

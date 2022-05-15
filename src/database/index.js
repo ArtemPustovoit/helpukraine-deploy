@@ -11,17 +11,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectDatabase = void 0;
 const mongodb_1 = require("mongodb");
-const url = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_USER_PASSWORD}@${process.env.DB_CLUSTER}.uqkqy.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
-const connectDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
-    const client = yield mongodb_1.MongoClient.connect(url, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
+const user = process.env.DB_USER;
+const userPassword = process.env.DB_USER_PASSWORD;
+const cluster = process.env.DB_CLUSTER;
+const url = `mongodb+srv://${user}:${userPassword}@${cluster}.mongodb.net/test?retryWrites=true&w=majority`;
+function connectDatabase() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const client = yield mongodb_1.MongoClient.connect(url);
+        const db = client.db("main");
+        return {
+            bookings: db.collection("bookings"),
+            listings: db.collection("listings"),
+            users: db.collection("users"),
+        };
     });
-    const db = client.db(process.env.DB_NAME);
-    return {
-        bookings: db.collection('bookings'),
-        listings: db.collection('listings'),
-        users: db.collection('users')
-    };
-});
+}
 exports.connectDatabase = connectDatabase;

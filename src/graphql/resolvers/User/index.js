@@ -17,7 +17,7 @@ exports.userResolvers = {
             try {
                 const user = yield db.users.findOne({ _id: id });
                 if (!user) {
-                    throw new Error("User can't be found");
+                    throw new Error("user can't be found");
                 }
                 const viewer = yield utils_1.authorize(db, req);
                 if (viewer && viewer._id === user._id) {

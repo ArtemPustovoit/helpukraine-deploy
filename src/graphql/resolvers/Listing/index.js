@@ -17,16 +17,16 @@ const utils_1 = require("../../../lib/utils");
 const types_2 = require("./types");
 const verifyHostListingInput = ({ title, description, type, price }) => {
     if (title.length > 100) {
-        throw new Error("Listing title must be under 100 characters");
+        throw new Error("listing title must be under 100 characters");
     }
     if (description.length > 5000) {
-        throw new Error("Listing description must be under 5000 characters");
+        throw new Error("listing description must be under 5000 characters");
     }
     if (type !== types_1.ListingType.Apartment && type !== types_1.ListingType.House) {
-        throw new Error("Listing type must be either apartment or house");
+        throw new Error("listing type must be either an apartment or house");
     }
     if (price < 0) {
-        throw new Error("Listing price must be greater than 0");
+        throw new Error("price must be greater than 0");
     }
 };
 exports.listingResolvers = {
@@ -35,7 +35,7 @@ exports.listingResolvers = {
             try {
                 const listing = yield db.listings.findOne({ _id: new mongodb_1.ObjectId(id) });
                 if (!listing) {
-                    throw new Error("Listing could not be found");
+                    throw new Error("listing can't be found");
                 }
                 const viewer = yield utils_1.authorize(db, req);
                 if (viewer && viewer._id === listing.host) {
@@ -53,16 +53,14 @@ exports.listingResolvers = {
                 const data = {
                     region: null,
                     total: 0,
-                    result: []
+                    result: [],
                 };
                 if (location) {
                     const { country, admin, city } = yield api_1.Google.geocode(location);
-                    if (city) {
+                    if (city)
                         query.city = city;
-                    }
-                    if (admin) {
+                    if (admin)
                         query.admin = admin;
-                    }
                     if (country) {
                         query.country = country;
                     }
@@ -89,14 +87,14 @@ exports.listingResolvers = {
             catch (error) {
                 throw new Error(`Failed to query listings: ${error}`);
             }
-        })
+        }),
     },
     Mutation: {
         hostListing: (_root, { input }, { db, req }) => __awaiter(void 0, void 0, void 0, function* () {
             verifyHostListingInput(input);
-            const viewer = yield utils_1.authorize(db, req);
+            let viewer = yield utils_1.authorize(db, req);
             if (!viewer) {
-                throw new Error("Viewer cannot be found");
+                throw new Error("viewer cannot be found");
             }
             const { country, admin, city } = yield api_1.Google.geocode(input.address);
             if (!country || !admin || !city) {
@@ -109,7 +107,7 @@ exports.listingResolvers = {
             const insertedListing = insertResult.ops[0];
             yield db.users.updateOne({ _id: viewer._id }, { $push: { listings: insertedListing._id } });
             return insertedListing;
-        })
+        }),
     },
     Listing: {
         id: (listing) => {
@@ -118,7 +116,7 @@ exports.listingResolvers = {
         host: (listing, _args, { db }) => __awaiter(void 0, void 0, void 0, function* () {
             const host = yield db.users.findOne({ _id: listing.host });
             if (!host) {
-                throw new Error("Host can't be found");
+                throw new Error("host can't be found");
             }
             return host;
         }),
@@ -132,10 +130,10 @@ exports.listingResolvers = {
                 }
                 const data = {
                     total: 0,
-                    result: []
+                    result: [],
                 };
                 let cursor = yield db.bookings.find({
-                    _id: { $in: listing.bookings }
+                    _id: { $in: listing.bookings },
                 });
                 cursor = cursor.skip(page > 0 ? (page - 1) * limit : 0);
                 cursor = cursor.limit(limit);
@@ -146,6 +144,6 @@ exports.listingResolvers = {
             catch (error) {
                 throw new Error(`Failed to query listing bookings: ${error}`);
             }
-        })
-    }
+        }),
+    },
 };
