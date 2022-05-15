@@ -5,9 +5,7 @@
   "engines": {
     "node": "12.4.0"
   },
-  "scripts": {
-      "start": "node src/index.js"
-  },
+  
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.0.0",
     "@types/bson": "^4.2.0",
@@ -23,5 +21,8 @@
     "mongodb": "^3.7.3",
     "react": "^18.1.0",
     "stripe": "^8.63.0"
-  }
+  },
+  "scripts": {
+    "start": "node src/index.js"
+}
 }
