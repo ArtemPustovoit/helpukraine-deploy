@@ -11,22 +11,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Google = void 0;
 const googleapis_1 = require("googleapis");
-const google_maps_services_js_1 = require("@googlemaps/google-maps-services-js");
+const maps_1 = require("@google/maps");
 const auth = new googleapis_1.google.auth.OAuth2(process.env.G_CLIENT_ID, process.env.G_CLIENT_SECRET, `${process.env.PUBLIC_URL}/login`);
-const maps = new google_maps_services_js_1.Client({});
+const maps = maps_1.createClient({ key: `${process.env.G_GEOCODE_KEY}`, Promise });
 const parseAddress = (addressComponents) => {
     let country = null;
     let admin = null;
     let city = null;
     for (const component of addressComponents) {
-        if (component.types.includes(google_maps_services_js_1.AddressType.country)) {
+        if (component.types.includes("country")) {
             country = component.long_name;
         }
-        if (component.types.includes(google_maps_services_js_1.AddressType.administrative_area_level_1)) {
+        if (component.types.includes("administrative_area_level_1")) {
             admin = component.long_name;
         }
-        if (component.types.includes(google_maps_services_js_1.AddressType.locality) ||
-            component.types.includes(google_maps_services_js_1.GeocodingAddressComponentType.postal_town)) {
+        if (component.types.includes("locality") || component.types.includes("postal_town")) {
             city = component.long_name;
         }
     }
@@ -34,31 +33,28 @@ const parseAddress = (addressComponents) => {
 };
 exports.Google = {
     authUrl: auth.generateAuthUrl({
-        // eslint-disable-next-line @typescript-eslint/camelcase
         access_type: "online",
         scope: [
             "https://www.googleapis.com/auth/userinfo.email",
-            "https://www.googleapis.com/auth/userinfo.profile",
-        ],
+            "https://www.googleapis.com/auth/userinfo.profile"
+        ]
     }),
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     logIn: (code) => __awaiter(void 0, void 0, void 0, function* () {
         const { tokens } = yield auth.getToken(code);
         auth.setCredentials(tokens);
         const { data } = yield googleapis_1.google.people({ version: "v1", auth }).people.get({
             resourceName: "people/me",
-            personFields: "emailAddresses,names,photos",
+            personFields: "emailAddresses,names,photos"
         });
         return { user: data };
     }),
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     geocode: (address) => __awaiter(void 0, void 0, void 0, function* () {
-        if (!process.env.G_GEOCODE_KEY)
-            throw new Error("missing Google Maps API key");
-        const res = yield maps.geocode({
-            params: { address, key: process.env.G_GEOCODE_KEY },
-        });
+        const res = yield maps.geocode({ address }).asPromise();
         if (res.status < 200 || res.status > 299) {
-            throw new Error("failed to geocode address");
+            throw new Error("Failed to geocode address");
         }
-        return parseAddress(res.data.results[0].address_components);
-    }),
+        return parseAddress(res.json.results[0].address_components);
+    })
 };

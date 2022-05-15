@@ -10,11 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authorize = void 0;
-exports.authorize = (db, req) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.get("X-CSRF-TOKEN");
+const authorize = (db, req) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.get('X-CSRF-TOKEN');
     const viewer = yield db.users.findOne({
         _id: req.signedCookies.viewer,
         token
     });
     return viewer;
 });
+exports.authorize = authorize;
