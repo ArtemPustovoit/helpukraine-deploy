@@ -18,7 +18,6 @@ var __awaiter =
           reject(e);
         }
       }
-      // bla bla
       function rejected(value) {
         try {
           step(generator["throw"](value));
