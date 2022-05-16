@@ -38,7 +38,7 @@ const mongodb_1 = require("mongodb");
 const user = process.env.DB_USER;
 const userPassword = process.env.DB_USER_PASSWORD;
 const cluster = process.env.DB_CLUSTER;
-const url = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_USER_PASSWORD}@${process.env.DB_CLUSTER}.uqkqy.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
+const url = `mongodb+srv://${user}:${userPassword}@${cluster}.mongodb.net/test?retryWrites=true&w=majority`;
 function connectDatabase() {
   return __awaiter(this, void 0, void 0, function* () {
     const client = yield mongodb_1.MongoClient.connect(url);
